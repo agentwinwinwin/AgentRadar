@@ -1,0 +1,155 @@
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-agentradar}
+      POSTGRES_USER: ${POSTGRES_USER:-agentradar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agentradar}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - redis_data:/data
+    logging: *default-logging
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://agentradar:agentradar@postgres:5432/agentradar}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ml_artifacts:/ml/artifacts
+      - ./skills:/skills:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config worker --loglevel=info --prefetch-multiplier=1 --queues=celery,github_normal,github_backfill,knowledge
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://agentradar:agentradar@postgres:5432/agentradar}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    volumes:
+      - ml_artifacts:/ml/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  celery-scoring:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config worker --loglevel=info --concurrency=1 --prefetch-multiplier=1 --queues=operations,scoring
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://agentradar:agentradar@postgres:5432/agentradar}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  celery-interactive:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config worker --loglevel=info --prefetch-multiplier=1 --queues=interactive
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://agentradar:agentradar@postgres:5432/agentradar}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    volumes:
+      - ml_artifacts:/ml/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  celery-ml:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config worker --loglevel=info --concurrency=1 --prefetch-multiplier=1 --hostname=ml@%h --queues=ml
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://agentradar:agentradar@postgres:5432/agentradar}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    volumes:
+      - ml_artifacts:/ml/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config beat --loglevel=info
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://agentradar:agentradar@postgres:5432/agentradar}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    logging: *default-logging
+
+volumes:
+  postgres_data:
+  redis_data:
+  ml_artifacts:

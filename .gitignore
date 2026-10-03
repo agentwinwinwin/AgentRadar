@@ -1,0 +1,63 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+!.env.production.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+backend/db.sqlite3
+backend/staticfiles/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Runtime data and model artifacts
+*.sqlite
+*.sqlite3
+*.joblib
+*.pkl
+*.pickle
+*.onnx
+*.log
+backups/
+data/
+media/
+ml_artifacts/
+
+# Personal/private documents and local generation files
+.codex_tmp/
+docs/career/
+scripts/build_career_docs.py
+scripts/build_thesis_doc.py
+scripts/update_thesis_intent_skills.py
+assets/fonts/
+*.docx
+*.pdf
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+*.tmp

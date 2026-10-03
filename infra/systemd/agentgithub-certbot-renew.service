@@ -1,0 +1,10 @@
+[Unit]
+Description=Renew AgentRadar TLS certificate
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ubuntu/agentGitHub
+ExecStart=/usr/bin/docker run --rm -v /home/ubuntu/agentGitHub/infra/letsencrypt:/etc/letsencrypt -v /home/ubuntu/agentGitHub/infra/certbot-webroot:/var/www/certbot certbot/certbot:latest renew --webroot -w /var/www/certbot --quiet
+ExecStartPost=/usr/bin/docker compose -f docker-compose.yml -f docker-compose.production.yml -f docker-compose.domain.yml exec -T reverse-proxy nginx -s reload
