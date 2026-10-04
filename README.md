@@ -16,6 +16,16 @@ AgentRadar 持续采集真实 GitHub 公共数据，通过历史快照、确定�
 - API 文档：[docs/API.md](docs/API.md)
 - 系统架构：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
+## 运行界面
+
+| 数据看板 | 项目发现 |
+| --- | --- |
+| <img src="docs/images/dashboard.jpg" alt="AgentRadar 数据看板" width="468"> | <img src="docs/images/discover.jpg" alt="AgentRadar 项目发现" width="468"> |
+
+| 项目详情 | 智能分析 |
+| --- | --- |
+| <img src="docs/images/project-detail.jpg" alt="AgentRadar 项目详情" width="468"> | <img src="docs/images/copilot.jpg" alt="AgentRadar 智能分析" width="468"> |
+
 ## 核心能力
 
 - **项目发现**：按分类、Topic、热度与结构化指标检索 AI Agent Repository。
