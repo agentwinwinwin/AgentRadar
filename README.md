@@ -9,30 +9,51 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-AgentRadar 持续采集真实 GitHub 公共数据，通过历史快照、确定性评分、经过门禁的机器学习模型和
-可追溯知识证据，帮助开发者与产品团队发现、比较和评估 AI Agent 开源项目。
+AgentRadar 持续采集真实 GitHub 公共数据，通过历史快照、确定性评分、经过数据门禁的机器学习流程和
+可追溯知识证据，帮助开发者与产品团队发现、比较和评估 AI Agent 开源项目。系统坚持“数据先于结论”：
+历史不足时明确展示数据积累状态，未通过验证的模型不会自动上线。
 
 - 在线体验：[agentradar.site](https://agentradar.site)
 - API 文档：[docs/API.md](docs/API.md)
 - 系统架构：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## 运行界面
+## 产品界面
 
-| 数据看板 | 项目发现 |
-| --- | --- |
-| <img src="docs/images/dashboard.jpg" alt="AgentRadar 数据看板" width="468"> | <img src="docs/images/discover.jpg" alt="AgentRadar 项目发现" width="468"> |
+### 数据看板
 
-| 项目详情 | 智能分析 |
+汇总项目规模、分类覆盖、趋势领先项目和高潜力项目，并展示数据更新时间与能力成熟状态。
+
+![AgentRadar 数据看板](docs/images/dashboard.jpg)
+
+### 项目分析与智能助手
+
+| Repository 详情 | PM Copilot 智能分析 |
 | --- | --- |
-| <img src="docs/images/project-detail.jpg" alt="AgentRadar 项目详情" width="468"> | <img src="docs/images/copilot.jpg" alt="AgentRadar 智能分析" width="468"> |
+| <img src="docs/images/repository-detail.jpg" alt="AgentRadar Repository 详情" width="468"> | <img src="docs/images/copilot.jpg" alt="AgentRadar PM Copilot 智能分析" width="468"> |
+
+### 关注与动态提醒
+
+| 我的关注 | 动态提醒 |
+| --- | --- |
+| <img src="docs/images/watchlist.jpg" alt="AgentRadar 我的关注" width="468"> | <img src="docs/images/alerts.jpg" alt="AgentRadar 动态提醒" width="468"> |
+
+### 管理控制台
+
+管理员可查看数据积累进度、训练门禁、模型注册与激活状态；训练、验证、测试和上线保持清晰边界。
+
+![AgentRadar 管理控制台](docs/images/admin-console.jpg)
+
+### 登录
+
+![AgentRadar 登录页面](docs/images/login.jpg)
 
 ## 核心能力
 
 - **项目发现**：按分类、Topic、热度与结构化指标检索 AI Agent Repository。
 - **持续采集**：Celery Beat/Worker 分层调度 GitHub Snapshot 与 Activity，支持限流、重试和幂等。
 - **趋势与潜力**：Trend、Momentum、Potential、Hype Risk 等确定性评分，严格区分 `NULL` 与 `0`。
-- **机器学习预测**：基于时间切分、数据质量门禁和 Model Registry 的 Logistic Regression、
-  Random Forest、XGBoost 训练与评估；未通过验证的模型不会自动上线。
+- **机器学习预测**：基于真实历史数据、时间切分、数据质量门禁和 Model Registry 完成训练与评估；
+  未通过验证的模型不会自动上线，生产模型必须由管理员明确激活。
 - **知识检索**：README、Docs、Release 等非结构化内容进入 pgvector，结构化指标始终从 PostgreSQL 查询。
 - **PM Copilot**：通过 Skill → MCP → Tool → Service 链路编排分析，并返回可追溯 Evidence。
 - **产品能力**：Dashboard、项目发现与详情、关注、提醒、日报/周报、点赞评论和管理员模型控制台。
@@ -79,8 +100,8 @@ flowchart LR
 ### Docker Compose（推荐）
 
 ```bash
-git clone <your-repository-url>
-cd agentGitHub
+git clone https://github.com/agentwinwinwin/AgentRadar.git
+cd AgentRadar
 cp .env.example .env
 docker compose config --quiet
 docker compose up -d postgres redis
